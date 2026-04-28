@@ -4,9 +4,12 @@ import os
 from urllib.parse import urlparse
 
 def _parse_db_url():
-    """Parse les variables MySQL dans tous les formats Railway possibles."""
-    url = (os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL") or
-           os.getenv("MYSQL_PRIVATE_URL"))
+    """Parse les variables MySQL — priorité aux URLs privées Railway."""
+    # Priorité : URL privée → URL standard → variables séparées
+    url = (os.getenv("MYSQL_PRIVATE_URL") or
+           os.getenv("MYSQL_URL") or
+           os.getenv("DATABASE_PRIVATE_URL") or
+           os.getenv("DATABASE_URL"))
     if url and ("mysql" in url or "mariadb" in url):
         p = urlparse(url)
         return {
@@ -16,6 +19,7 @@ def _parse_db_url():
             "password": p.password,
             "database": p.path.lstrip("/")
         }
+    # Variables séparées (fallback local)
     return {
         "host": (os.getenv("MYSQL_HOST") or os.getenv("MYSQLHOST") or "localhost"),
         "port": int(os.getenv("MYSQL_PORT") or os.getenv("MYSQLPORT") or 3306),

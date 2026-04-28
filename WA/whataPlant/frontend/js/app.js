@@ -1,9 +1,6 @@
-// API_BASE : toujours sur le même serveur Flask (port 5000 local, domaine Railway en prod)
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:${window.location.port || (window.location.protocol === 'https:' ? 443 : 80)}/api`.replace(/:80\/api$/, '/api').replace(/:443\/api$/, '/api');
-
-// Simplification : même origine, juste /api
-const _API_BASE = `${window.location.origin}/api`;
-window.API_BASE = _API_BASE;
+// API_BASE : même origine que le frontend (fonctionne en local et sur Railway)
+const API_BASE = `${window.location.origin}/api`;
+window.API_BASE = API_BASE;
 
 document.querySelectorAll(".nav-tab").forEach(tab => {
   tab.addEventListener("click", () => {

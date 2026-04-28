@@ -197,3 +197,8 @@ def serve_frontend(path):
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
+else:
+    # Point d'entrée pour gunicorn ou python direct
+    port = int(os.getenv("PORT", 5000))
+    if os.getenv("RAILWAY_ENVIRONMENT"):
+        app.run(debug=False, host="0.0.0.0", port=port)
