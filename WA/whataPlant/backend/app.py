@@ -195,10 +195,6 @@ def serve_frontend(path):
     return send_from_directory(FRONTEND_DIR, "index.html")
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
+    port = int(os.getenv("PORT", 8080))
+    print(f"Starting WhatAPlant on port {port}")
     app.run(debug=False, host="0.0.0.0", port=port)
-else:
-    # Point d'entrée pour gunicorn ou python direct
-    port = int(os.getenv("PORT", 5000))
-    if os.getenv("RAILWAY_ENVIRONMENT"):
-        app.run(debug=False, host="0.0.0.0", port=port)
