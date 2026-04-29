@@ -24,6 +24,8 @@ else:
     FRONTEND_DIR = BASE_DIR
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
+print(f"✅ Frontend servi depuis : {FRONTEND_DIR}")
+print(f"   index.html existe : {os.path.exists(os.path.join(FRONTEND_DIR, 'index.html'))}")
 CORS(app, origins=os.getenv("ALLOWED_ORIGINS", "*"))
 
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
