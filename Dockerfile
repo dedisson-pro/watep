@@ -11,6 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN chmod +x start.sh
+# Script d'entrée qui lit $PORT au runtime
+RUN echo '#!/bin/sh\nexec python app.py' > /entrypoint.sh && chmod +x /entrypoint.sh
 
-CMD ["/bin/sh", "-c", "python -c \"import os,subprocess; subprocess.run(['gunicorn','app:app','--bind','0.0.0.0:'+str(os.environ.get('PORT','8080')),'--workers','2','--timeout','120'])\""]
+EXPOSE ${PORT:-8080}
+
+ENTRYPOINT ["/entrypoint.sh"]
