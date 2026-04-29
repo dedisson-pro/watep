@@ -178,6 +178,20 @@ def chat():
     return jsonify(chat_with_agent(plant_context, message, history))
 
 # ── DASHBOARD ────────────────────────────────────────────────
+@app.route("/api/debug")
+def debug():
+    import os
+    files = []
+    for root, dirs, filenames in os.walk(BASE_DIR):
+        for f in filenames[:5]:
+            files.append(os.path.join(root, f).replace(BASE_DIR, ""))
+    return jsonify({
+        "base_dir": BASE_DIR,
+        "frontend_dir": FRONTEND_DIR,
+        "index_exists": os.path.exists(os.path.join(FRONTEND_DIR, "index.html")),
+        "files_sample": files[:20]
+    })
+
 @app.route("/api/dashboard", methods=["GET"])
 def dashboard():
     return jsonify(get_dashboard_stats())
