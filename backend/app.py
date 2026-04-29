@@ -23,6 +23,10 @@ for candidate in [
 else:
     FRONTEND_DIR = BASE_DIR
 
+print(f"BASE_DIR={BASE_DIR}")
+print(f"FRONTEND_DIR={FRONTEND_DIR}")
+print(f"index.html existe={os.path.exists(os.path.join(FRONTEND_DIR, 'index.html'))}")
+
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
 print(f"✅ Frontend servi depuis : {FRONTEND_DIR}")
 print(f"   index.html existe : {os.path.exists(os.path.join(FRONTEND_DIR, 'index.html'))}")
