@@ -15,11 +15,16 @@ Sois precis et mentionne toujours de consulter un professionnel pour usage medic
 
 # ── RECHERCHE D'IMAGES GRATUITE ───────────────────────────────
 
+HEADERS = {
+    "User-Agent": "WhatAPlant/1.0 (https://watep-production.up.railway.app; contact@whataPlant.app) python-requests"
+}
+
 def search_wikimedia_commons(query: str):
     """Cherche une image sur Wikimedia Commons par mot-cle (gratuit, sans cle)."""
     try:
         resp = http_requests.get(
             "https://commons.wikimedia.org/w/api.php",
+            headers=HEADERS,
             params={
                 "action": "query",
                 "generator": "search",
@@ -50,6 +55,7 @@ def search_wikipedia_image(query: str):
     try:
         resp = http_requests.get(
             "https://en.wikipedia.org/w/api.php",
+            headers=HEADERS,
             params={
                 "action": "query",
                 "titles": query,
