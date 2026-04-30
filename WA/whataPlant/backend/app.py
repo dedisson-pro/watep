@@ -23,7 +23,13 @@ for candidate in [
 else:
     FRONTEND_DIR = BASE_DIR
 
+print(f"BASE_DIR={BASE_DIR}")
+print(f"FRONTEND_DIR={FRONTEND_DIR}")
+print(f"index.html existe={os.path.exists(os.path.join(FRONTEND_DIR, 'index.html'))}")
+
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path="")
+print(f"✅ Frontend servi depuis : {FRONTEND_DIR}")
+print(f"   index.html existe : {os.path.exists(os.path.join(FRONTEND_DIR, 'index.html'))}")
 CORS(app, origins=os.getenv("ALLOWED_ORIGINS", "*"))
 
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
@@ -176,6 +182,20 @@ def chat():
     return jsonify(chat_with_agent(plant_context, message, history))
 
 # ── DASHBOARD ────────────────────────────────────────────────
+@app.route("/api/debug")
+def debug():
+    import os
+    files = []
+    for root, dirs, filenames in os.walk(BASE_DIR):
+        for f in filenames[:5]:
+            files.append(os.path.join(root, f).replace(BASE_DIR, ""))
+    return jsonify({
+        "base_dir": BASE_DIR,
+        "frontend_dir": FRONTEND_DIR,
+        "index_exists": os.path.exists(os.path.join(FRONTEND_DIR, "index.html")),
+        "files_sample": files[:20]
+    })
+
 @app.route("/api/dashboard", methods=["GET"])
 def dashboard():
     return jsonify(get_dashboard_stats())
