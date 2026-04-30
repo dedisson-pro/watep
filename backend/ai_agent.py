@@ -4,6 +4,8 @@ import requests as http_requests
 from groq import Groq
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+PEXELS_API_KEY = os.getenv("PEXELS_API_KEY", "")
+
 if not GROQ_API_KEY:
     print("WARNING: GROQ_API_KEY manquante")
 
@@ -13,45 +15,33 @@ SYSTEM_PROMPT = """Tu es WhatAPlant, un agent IA expert en botanique, agronomie 
 Tu analyses les plantes et fournis des rapports complets en francais.
 Sois precis et mentionne toujours de consulter un professionnel pour usage medical."""
 
-# ── RECHERCHE D'IMAGES GRATUITE ───────────────────────────────
-
 HEADERS = {
-    "User-Agent": "WhatAPlant/1.0 (https://watep-production.up.railway.app; contact@whataPlant.app) python-requests"
+    "User-Agent": "WhatAPlant/1.0 (https://watep-production.up.railway.app) python-requests"
 }
 
-def search_wikimedia_commons(query: str):
-    """Cherche une image sur Wikimedia Commons par mot-cle (gratuit, sans cle)."""
+# ── RECHERCHE D'IMAGES ────────────────────────────────────────
+
+def search_pexels(query: str):
+    """Cherche une image via Pexels API (gratuit, 200 req/heure)."""
+    if not PEXELS_API_KEY:
+        return None
     try:
         resp = http_requests.get(
-            "https://commons.wikimedia.org/w/api.php",
-            headers=HEADERS,
-            params={
-                "action": "query",
-                "generator": "search",
-                "gsrnamespace": 6,
-                "gsrsearch": query,
-                "gsrlimit": 3,
-                "prop": "imageinfo",
-                "iiprop": "url|thumburl",
-                "iiurlwidth": 400,
-                "format": "json"
-            },
+            "https://api.pexels.com/v1/search",
+            headers={"Authorization": PEXELS_API_KEY},
+            params={"query": query, "per_page": 1, "orientation": "landscape"},
             timeout=5
         )
         data = resp.json()
-        pages = data.get("query", {}).get("pages", {})
-        for page in pages.values():
-            info = page.get("imageinfo", [])
-            if info:
-                url = info[0].get("thumburl") or info[0].get("url")
-                if url and not url.endswith(".svg"):
-                    return url
+        photos = data.get("photos", [])
+        if photos:
+            return photos[0]["src"]["medium"]
     except Exception as e:
-        print(f"Wikimedia Commons error: {e}")
+        print(f"Pexels error: {e}")
     return None
 
 def search_wikipedia_image(query: str):
-    """Cherche l'image principale d'un article Wikipedia (gratuit, sans cle)."""
+    """Cherche l'image principale d'un article Wikipedia."""
     try:
         resp = http_requests.get(
             "https://en.wikipedia.org/w/api.php",
@@ -77,31 +67,22 @@ def search_wikipedia_image(query: str):
     return None
 
 def get_food_image(recipe_name: str, plant_name: str):
-    """
-    Cherche une image de recette/plat via plusieurs sources gratuites.
-    Ordre : Wikimedia Commons (recette) → Wikipedia (recette) →
-            Wikimedia Commons (plante) → Wikipedia (plante)
-    """
-    # Essayer avec le nom de la recette
-    img = search_wikimedia_commons(recipe_name + " food dish")
+    """Cherche une image de recette — Pexels d'abord, Wikipedia en fallback."""
+    img = search_pexels(f"{recipe_name} african food")
+    if img:
+        return img
+    img = search_pexels(f"{plant_name} food dish")
     if img:
         return img
     img = search_wikipedia_image(recipe_name)
     if img:
         return img
-    # Fallback sur la plante elle-meme
-    img = search_wikimedia_commons(plant_name + " plant food")
-    if img:
-        return img
-    img = search_wikipedia_image(plant_name)
-    if img:
-        return img
-    return None
+    return search_wikipedia_image(plant_name)
 
 # ── ANALYSE PLANTE ────────────────────────────────────────────
 
 def analyze_plant(plant_info: dict) -> dict:
-    """Genere un rapport complet sur la plante via Groq + images via Wikimedia."""
+    """Genere un rapport complet sur la plante via Groq + images."""
     prompt = (
         "Analyse la plante : " + str(plant_info.get("scientific_name")) +
         " (" + str(plant_info.get("common_name")) + "), famille " +
@@ -125,7 +106,6 @@ def analyze_plant(plant_info: dict) -> dict:
             max_tokens=1500
         )
         content = response.choices[0].message.content.strip()
-        # Nettoyer le markdown si présent
         if "```" in content:
             parts = content.split("```")
             for part in parts:
@@ -135,23 +115,18 @@ def analyze_plant(plant_info: dict) -> dict:
                 if part.startswith("{"):
                     content = part
                     break
-        # Extraire le JSON si du texte précède
         start = content.find("{")
         end = content.rfind("}") + 1
         if start >= 0 and end > start:
             content = content[start:end]
         result = json.loads(content)
 
-        # Chercher des images pour chaque recette suggérée
         plant_name = plant_info.get("common_name") or plant_info.get("scientific_name", "plant")
         recipes = result.get("recipe_suggestions", [])
         recipe_images = []
         for recipe in recipes[:3]:
             img_url = get_food_image(recipe, plant_name)
-            recipe_images.append({
-                "name": recipe,
-                "image_url": img_url  # None si aucune image trouvée
-            })
+            recipe_images.append({"name": recipe, "image_url": img_url})
         result["recipe_images"] = recipe_images
         return result
 
@@ -161,21 +136,16 @@ def analyze_plant(plant_info: dict) -> dict:
             "error": str(e),
             "summary": "Analyse IA indisponible.",
             "recipe_images": [],
-            "is_edible": "Inconnu",
-            "is_medicinal": "Inconnu",
-            "is_toxic": "Inconnu",
-            "is_invasive": "Inconnu",
-            "health_status": "",
-            "edible_details": "",
-            "medicinal_details": "",
-            "toxic_details": "",
+            "is_edible": "Inconnu", "is_medicinal": "Inconnu",
+            "is_toxic": "Inconnu", "is_invasive": "Inconnu",
+            "health_status": "", "edible_details": "",
+            "medicinal_details": "", "toxic_details": "",
             "environmental_impact": ""
         }
 
 # ── CHAT AGENT ────────────────────────────────────────────────
 
 def chat_with_agent(plant_context: dict, user_message: str, history: list) -> dict:
-    """Conversation contextuelle avec l'agent IA + image si recette demandee."""
     context = (
         "Plante : " + str(plant_context.get("scientific_name")) +
         " (" + str(plant_context.get("common_name")) + "). " +
@@ -195,7 +165,6 @@ def chat_with_agent(plant_context: dict, user_message: str, history: list) -> di
         )
         reply_text = response.choices[0].message.content
 
-        # Chercher une image si l'utilisateur parle de recette/sauce
         recipe_keywords = ["recette", "sauce", "preparer", "cuisiner", "plat",
                            "decoction", "infusion", "comment faire", "manger"]
         image_url = None
