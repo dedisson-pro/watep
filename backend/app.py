@@ -8,6 +8,7 @@ load_dotenv()
 from database import init_db, save_scan, get_all_scans, get_scan_by_id, get_dashboard_stats
 from plant_service import identify_plant, parse_plantnet_result
 from ai_agent import analyze_plant, chat_with_agent
+from ml_predictor import predict_edibility as ml_predict, is_model_available
 
 # Chercher le dossier frontend (local ou Railway)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -70,6 +71,9 @@ def scan_plant():
 
     ai_result = analyze_plant(plant_info)
 
+    # ── Prédiction ML locale (Random Forest) ─────────────────────────
+    ml_result = ml_predict(plant_info, ai_result)
+
     # Nettoyer recipe_images pour la sérialisation JSON
     recipe_images = ai_result.get("recipe_images", [])
     ai_result_clean = {k: v for k, v in ai_result.items() if k != "recipe_images"}
@@ -77,6 +81,12 @@ def scan_plant():
         {"name": r.get("name", ""), "image_url": r.get("image_url")}
         for r in recipe_images
     ]
+
+    # Injecter la prédiction ML dans le rapport IA
+    ai_result_clean["ml_prediction"]    = ml_result.get("ml_prediction")
+    ai_result_clean["ml_confidence"]    = ml_result.get("ml_confidence")
+    ai_result_clean["ml_probabilities"] = ml_result.get("ml_probabilities", {})
+    ai_result_clean["ml_available"]     = ml_result.get("ml_available", False)
 
     scan_data = {
         "image_path": img_filename,
@@ -180,6 +190,24 @@ def chat():
         "ai_report": json.dumps(ai_report, ensure_ascii=False)
     }
     return jsonify(chat_with_agent(plant_context, message, history))
+
+# ── ML STATUS ────────────────────────────────────────────────
+@app.route("/api/ml/status", methods=["GET"])
+def ml_status():
+    """Retourne l'état du modèle ML local (pour démo soutenance)."""
+    available = is_model_available()
+    info = {
+        "model_available": available,
+        "model_type": "Random Forest (scikit-learn)",
+        "task": "Classification comestibilité — Oui / Non / Partiellement",
+        "metrics": {
+            "accuracy": 0.9681,
+            "f1_score": 0.9697,
+            "best_params": "n_estimators=50, max_depth=10"
+        } if available else {},
+        "model_path": "../notebook/whataPlant_model.pkl"
+    }
+    return jsonify(info)
 
 # ── DASHBOARD ────────────────────────────────────────────────
 @app.route("/api/debug")

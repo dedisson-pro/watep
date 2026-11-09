@@ -34,14 +34,20 @@ def identify_plant(image_bytes: bytes) -> dict:
     processed = preprocess_image(image_bytes)
     files = [("images", ("plant.jpg", processed, "image/jpeg"))]
     params = {"api-key": PLANTNET_API_KEY, "lang": "fr", "include-related-images": "false"}
-    try:
-        resp = requests.post(PLANTNET_URL, files=files, params=params, timeout=30)
-        resp.raise_for_status()
-        return resp.json()
-    except requests.exceptions.HTTPError as e:
-        return {"error": f"PlantNet HTTP {resp.status_code} : {e}"}
-    except Exception as e:
-        return {"error": str(e)}
+    for attempt in range(2):  # 2 tentatives
+        try:
+            resp = requests.post(PLANTNET_URL, files=files, params=params, timeout=60)
+            resp.raise_for_status()
+            return resp.json()
+        except requests.exceptions.Timeout:
+            if attempt == 0:
+                print(f"PlantNet timeout (tentative {attempt+1}), nouvel essai...")
+                continue
+            return {"error": "PlantNet ne répond pas (timeout). Vérifiez votre connexion et réessayez."}
+        except requests.exceptions.HTTPError as e:
+            return {"error": f"PlantNet HTTP {resp.status_code} : {e}"}
+        except Exception as e:
+            return {"error": str(e)}
 
 def parse_plantnet_result(result: dict) -> dict:
     """Extrait les infos essentielles du résultat PlantNet."""

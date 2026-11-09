@@ -11,6 +11,16 @@ if not GROQ_API_KEY:
 
 client = Groq(api_key=GROQ_API_KEY)
 
+# Modèle actif — qwen3.8-27b disponible sur ce compte Groq
+GROQ_MODEL = "qwen/qwen3.8-27b"
+
+
+def _clean_response(text: str) -> str:
+    """Supprime les balises <think>...</think> que Qwen peut ajouter."""
+    import re
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    return text.strip()
+
 SYSTEM_PROMPT = """Tu es WhatAPlant, un agent IA expert en botanique, agronomie et medecine traditionnelle africaine.
 Tu analyses les plantes et fournis des rapports complets en francais.
 Sois precis et mentionne toujours de consulter un professionnel pour usage medical."""
@@ -97,7 +107,7 @@ def analyze_plant(plant_info: dict) -> dict:
     )
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=GROQ_MODEL,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt}
@@ -105,7 +115,7 @@ def analyze_plant(plant_info: dict) -> dict:
             temperature=0.3,
             max_tokens=1500
         )
-        content = response.choices[0].message.content.strip()
+        content = _clean_response(response.choices[0].message.content.strip())
         if "```" in content:
             parts = content.split("```")
             for part in parts:
@@ -158,12 +168,12 @@ def chat_with_agent(plant_context: dict, user_message: str, history: list) -> di
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=GROQ_MODEL,
             messages=messages,
             temperature=0.5,
             max_tokens=800
         )
-        reply_text = response.choices[0].message.content
+        reply_text = _clean_response(response.choices[0].message.content)
 
         recipe_keywords = ["recette", "sauce", "preparer", "cuisiner", "plat",
                            "decoction", "infusion", "comment faire", "manger"]

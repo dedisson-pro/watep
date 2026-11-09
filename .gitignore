@@ -5,3 +5,9 @@ __pycache__/
 backend/uploads/
 *.db
 backend/test_camera.py
+
+# Notebook — exclure les fichiers lourds
+notebook/WhatAPlant_ML_executed.ipynb
+notebook/whataPlant_model.pkl
+notebook/*.png
+notebook/model_metrics.json
