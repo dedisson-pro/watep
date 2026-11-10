@@ -217,11 +217,23 @@ def serve_frontend(path):
 @app.route("/api/test-plantnet")
 def test_plantnet():
     import requests as req
-    img = req.get("https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Hapus_Mango.jpg/320px-Hapus_Mango.jpg", timeout=10)
+    headers = {"User-Agent": "WhatAPlant/1.0 python-requests"}
+    img = req.get("https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Hapus_Mango.jpg/320px-Hapus_Mango.jpg", headers=headers, timeout=10)
     files = [("images", ("mango.jpg", img.content, "image/jpeg"))]
     params = {"api-key": os.getenv("PLANTNET_API_KEY"), "lang": "fr", "include-related-images": "false"}
     r = req.post("https://my-api.plantnet.org/v2/identify/all", files=files, params=params, timeout=30)
     return jsonify({"status": r.status_code, "result": r.json()})
+
+@app.route("/api/test-groq")
+def test_groq():
+    from groq import Groq
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    resp = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": "Dis juste: OK"}],
+        max_tokens=10
+    )
+    return jsonify({"status": "ok", "reply": resp.choices[0].message.content})
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8080))
