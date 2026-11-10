@@ -116,7 +116,7 @@ def analyze_plant(plant_info: dict) -> dict:
     )
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt}
@@ -188,7 +188,7 @@ def chat_with_agent(plant_context: dict, user_message: str, history: list) -> di
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             messages=messages,
             temperature=0.5,
             max_tokens=800

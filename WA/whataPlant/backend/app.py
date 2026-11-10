@@ -241,7 +241,7 @@ def test_groq():
     from groq import Groq
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
     resp = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3.8-27b",
         messages=[{"role": "user", "content": "Dis juste: OK"}],
         max_tokens=10
     )
