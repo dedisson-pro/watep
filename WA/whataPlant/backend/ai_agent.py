@@ -7,6 +7,8 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     print("WARNING: GROQ_API_KEY manquante")
 
+GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+
 client = Groq(api_key=GROQ_API_KEY)
 
 SYSTEM_PROMPT = """Tu es WhatAPlant, un agent IA expert en botanique, agronomie et medecine traditionnelle africaine.
@@ -116,7 +118,7 @@ def analyze_plant(plant_info: dict) -> dict:
     )
     try:
         response = client.chat.completions.create(
-            model="qwen/qwen3.8-27b",
+            model=GROQ_MODEL,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt}
@@ -188,7 +190,7 @@ def chat_with_agent(plant_context: dict, user_message: str, history: list) -> di
 
     try:
         response = client.chat.completions.create(
-            model="qwen/qwen3.8-27b",
+            model=GROQ_MODEL,
             messages=messages,
             temperature=0.5,
             max_tokens=800
