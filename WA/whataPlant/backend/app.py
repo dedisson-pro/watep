@@ -217,15 +217,17 @@ def serve_frontend(path):
 @app.route("/api/test-plantnet")
 def test_plantnet():
     import requests as req
-    headers = {"User-Agent": "Mozilla/5.0 (compatible; WhatAPlant/1.0)"}
-    img = req.get("https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Hapus_Mango.jpg/320px-Hapus_Mango.jpg", headers=headers, timeout=10)
-    content_type = img.headers.get("Content-Type", "unknown")
-    if "image" not in content_type:
-        return jsonify({"debug": f"Wikipedia returned {content_type}, not an image", "size": len(img.content)})
-    files = [("images", ("mango.jpg", img.content, "image/jpeg"))]
+    from PIL import Image
+    import io
+    # Créer une image verte (feuille) en mémoire sans dépendre d'URLs externes
+    img = Image.new("RGB", (200, 200), color=(34, 139, 34))
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=85)
+    buf.seek(0)
+    files = [("images", ("leaf.jpg", buf.read(), "image/jpeg"))]
     params = {"api-key": os.getenv("PLANTNET_API_KEY"), "lang": "fr", "include-related-images": "false"}
     r = req.post("https://my-api.plantnet.org/v2/identify/all", files=files, params=params, timeout=30)
-    return jsonify({"img_type": content_type, "img_size": len(img.content), "status": r.status_code, "result": r.json()})
+    return jsonify({"status": r.status_code, "result": r.json()})
 
 @app.route("/api/test-groq")
 def test_groq():
