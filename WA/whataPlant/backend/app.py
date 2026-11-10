@@ -223,11 +223,13 @@ def test_plantnet():
     img = Image.new("RGB", (200, 200), color=(34, 139, 34))
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=85)
-    buf.seek(0)
-    files = [("images", ("leaf.jpg", buf.read(), "image/jpeg"))]
+    jpeg_bytes = buf.getvalue()
+    # Debug: vérifier que c'est bien un JPEG (magic bytes FF D8)
+    magic = jpeg_bytes[:4].hex()
+    files = [("images", ("leaf.jpg", jpeg_bytes, "image/jpeg"))]
     params = {"api-key": os.getenv("PLANTNET_API_KEY"), "lang": "fr", "include-related-images": "false"}
     r = req.post("https://my-api.plantnet.org/v2/identify/all", files=files, params=params, timeout=30)
-    return jsonify({"status": r.status_code, "result": r.json()})
+    return jsonify({"magic_bytes": magic, "size": len(jpeg_bytes), "status": r.status_code, "result": r.json()})
 
 @app.route("/api/test-groq")
 def test_groq():
