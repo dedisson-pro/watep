@@ -219,17 +219,22 @@ def test_plantnet():
     import requests as req
     from PIL import Image
     import io
-    # Créer une image verte (feuille) en mémoire sans dépendre d'URLs externes
-    img = Image.new("RGB", (200, 200), color=(34, 139, 34))
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=85)
-    jpeg_bytes = buf.getvalue()
-    # Debug: vérifier que c'est bien un JPEG (magic bytes FF D8)
-    magic = jpeg_bytes[:4].hex()
-    files = [("images", ("leaf.jpg", jpeg_bytes, "image/jpeg"))]
+    # Récupérer une vraie photo de plante via Pexels
+    pexels_key = os.getenv("PEXELS_API_KEY")
+    pexels_resp = req.get(
+        "https://api.pexels.com/v1/search",
+        params={"query": "plant leaf", "per_page": 1},
+        headers={"Authorization": pexels_key},
+        timeout=10
+    )
+    if pexels_resp.status_code != 200:
+        return jsonify({"error": f"Pexels failed: {pexels_resp.status_code}"})
+    photo_url = pexels_resp.json()["photos"][0]["src"]["medium"]
+    img_resp = req.get(photo_url, timeout=10)
+    files = [("images", ("plant.jpg", img_resp.content, "image/jpeg"))]
     params = {"api-key": os.getenv("PLANTNET_API_KEY"), "lang": "fr", "include-related-images": "false"}
     r = req.post("https://my-api.plantnet.org/v2/identify/all", files=files, params=params, timeout=30)
-    return jsonify({"magic_bytes": magic, "size": len(jpeg_bytes), "status": r.status_code, "result": r.json()})
+    return jsonify({"photo_url": photo_url, "img_size": len(img_resp.content), "status": r.status_code, "result": r.json()})
 
 @app.route("/api/test-groq")
 def test_groq():
