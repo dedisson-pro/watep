@@ -62,7 +62,7 @@ function openMobileCamera() {
   modal.innerHTML = `
     <div class="modal-content" style="max-width:560px">
       <div class="modal-close">
-        <h3>📷 Scanner une plante</h3>
+        <h3><svg class="ic"><use href="#ic-camera"/></svg> Scanner une plante</h3>
         <button id="btnCloseCamera">✕</button>
       </div>
       <div style="padding:1rem;text-align:center">
@@ -75,8 +75,8 @@ function openMobileCamera() {
         </div>
         <p id="camStatus" style="color:var(--text-muted);font-size:0.85rem;margin:0.75rem 0">Démarrage...</p>
         <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:0.5rem">
-          <button class="btn btn-primary" id="btnCapture" style="font-size:1.1rem;padding:0.75rem 2rem" disabled>📸 Capturer</button>
-          <button class="btn btn-secondary" id="btnSwitchCam">🔄 Retourner</button>
+          <button class="btn btn-primary" id="btnCapture" style="font-size:1.1rem;padding:0.75rem 2rem" disabled><svg class="ic"><use href="#ic-camera"/></svg> Capturer</button>
+          <button class="btn btn-secondary" id="btnSwitchCam">&#8635; Retourner</button>
         </div>
         <canvas id="cameraCanvas" style="display:none"></canvas>
       </div>
@@ -139,13 +139,13 @@ function openPCCamera() {
   modal.innerHTML = `
     <div class="modal-content" style="max-width:380px;text-align:center">
       <div class="modal-close">
-        <h3>📷 Capture en cours</h3>
+        <h3><svg class="ic"><use href="#ic-camera"/></svg> Capture en cours</h3>
         <button id="btnCloseCamera">✕</button>
       </div>
       <div style="padding:2rem">
         <div class="spinner"></div>
         <p style="color:var(--text-muted);margin:1.2rem 0;line-height:1.8">
-          📸 Capture de la webcam...<br/>
+          Capture de la webcam...<br/>
           <span style="color:var(--green-light);font-weight:600">Placez la plante devant la caméra</span>
         </p>
       </div>
@@ -228,11 +228,15 @@ function renderResult(data) {
   document.getElementById("confidenceBar").style.width = conf + "%";
   document.getElementById("confidenceVal").textContent = conf + "%";
 
+  const IC_u = '<svg class="ic"><use href="#ic-utensils"/></svg>';
+  const IC_p = '<svg class="ic"><use href="#ic-pill"/></svg>';
+  const IC_a = '<svg class="ic"><use href="#ic-alert"/></svg>';
+  const IC_g = '<svg class="ic"><use href="#ic-globe"/></svg>';
   const badges = [
-    { label: "🍽️ Comestible : " + (analysis.is_edible || "?"), val: analysis.is_edible },
-    { label: "💊 Médicinal : " + (analysis.is_medicinal || "?"), val: analysis.is_medicinal },
-    { label: "⚠️ Toxique : " + (analysis.is_toxic || "?"), val: analysis.is_toxic },
-    { label: "🌍 Invasif : " + (analysis.is_invasive || "?"), val: analysis.is_invasive },
+    { label: IC_u + " Comestible : " + (analysis.is_edible || "?"), val: analysis.is_edible },
+    { label: IC_p + " Médicinal : " + (analysis.is_medicinal || "?"), val: analysis.is_medicinal },
+    { label: IC_a + " Toxique : " + (analysis.is_toxic || "?"), val: analysis.is_toxic },
+    { label: IC_g + " Invasif : " + (analysis.is_invasive || "?"), val: analysis.is_invasive },
   ];
   document.getElementById("badgesRow").innerHTML = badges.map(b =>
     `<span class="badge ${badgeClass(b.val)}">${b.label}</span>`
@@ -257,12 +261,12 @@ function renderResult(data) {
   }
 
   if (recipes.length > 0 && analysis.is_edible !== "Non") {
-    recipeImages.innerHTML = `<p style="font-size:0.8rem;color:var(--accent);margin-bottom:0.5rem;width:100%">🍽️ Idées de recettes</p>` +
+    recipeImages.innerHTML = `<p style="font-size:0.8rem;color:var(--accent);margin-bottom:0.5rem;width:100%"><svg class="ic"><use href="#ic-utensils"/></svg> Idées de recettes</p>` +
       recipes.slice(0, 3).map(r => `
         <div class="recipe-card">
           ${r.image_url
             ? `<img src="${r.image_url}" alt="${r.name}" loading="lazy" onerror="this.style.display='none'"/>`
-            : `<div style="width:100%;height:110px;background:var(--bg2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem">🍽️</div>`
+            : `<div style="width:100%;height:110px;background:var(--bg2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--green-light)"><svg style="width:2.5rem;height:2.5rem"><use href="#ic-utensils"/></svg></div>`
           }
           <p>${r.name}</p>
         </div>`).join("");
@@ -273,7 +277,7 @@ function renderResult(data) {
   document.getElementById("toxicDetails").textContent = analysis.toxic_details || "Non disponible";
   document.getElementById("envImpact").textContent = analysis.environmental_impact || "Non disponible";
 
-  document.getElementById("chatMessages").innerHTML = `<div class="chat-msg ai">🌿 ${analysis.summary || "Analyse complète disponible ci-dessus."}</div>`;
+  document.getElementById("chatMessages").innerHTML = `<div class="chat-msg ai"><svg class="ic"><use href="#ic-leaf"/></svg> ${analysis.summary || "Analyse complète disponible ci-dessus."}</div>`;
   resultCard.classList.remove("hidden");
   resultCard.scrollIntoView({ behavior: "smooth" });
 }

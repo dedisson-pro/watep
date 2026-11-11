@@ -8,12 +8,121 @@
   <link rel="manifest" href="manifest.json"/>
   <link rel="stylesheet" href="css/style.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .ic { display: inline-block; width: 1.1em; height: 1.1em; vertical-align: -0.2em; flex-shrink: 0; }
+    .ic-lg { display: block; width: 3rem; height: 3rem; margin: 0 auto 1rem; }
+    .ic-nav { display: block; width: 1.6rem; height: 1.6rem; }
+  </style>
 </head>
 <body>
+
+<!-- ── SVG SPRITE ─────────────────────────────────────────── -->
+<svg style="display:none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+
+    <!-- Feuille -->
+    <symbol id="ic-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+    </symbol>
+
+    <!-- Appareil photo -->
+    <symbol id="ic-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </symbol>
+
+    <!-- Galerie / image -->
+    <symbol id="ic-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <circle cx="8.5" cy="8.5" r="1.5"/>
+      <polyline points="21 15 16 10 5 21"/>
+    </symbol>
+
+    <!-- Loupe analyse -->
+    <symbol id="ic-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="10.5" cy="10.5" r="6.5"/>
+      <line x1="21" y1="21" x2="15.8" y2="15.8"/>
+    </symbol>
+
+    <!-- Fermer / X -->
+    <symbol id="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </symbol>
+
+    <!-- Fiole de laboratoire -->
+    <symbol id="ic-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 3h6M9 3v8l-4.5 7.5A2 2 0 0 0 6.26 21h11.48a2 2 0 0 0 1.76-2.5L15 11V3"/>
+      <line x1="8.5" y1="14" x2="15.5" y2="14"/>
+    </symbol>
+
+    <!-- Bourgeon / pousse -->
+    <symbol id="ic-sprout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 20h10M10 20c5.5-2.5.8-6.4 3-10"/>
+      <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/>
+      <path d="M14.1 6a7 7 0 0 1 1.1 7.5c-1.7-1.7-2.4-3.5-2.4-5.5.7-.4 1.4-.5 1.3-2z"/>
+    </symbol>
+
+    <!-- Puce / circuit IA -->
+    <symbol id="ic-cpu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="4" width="16" height="16" rx="2"/>
+      <rect x="9" y="9" width="6" height="6"/>
+      <line x1="9" y1="1" x2="9" y2="4"/>
+      <line x1="15" y1="1" x2="15" y2="4"/>
+      <line x1="9" y1="20" x2="9" y2="23"/>
+      <line x1="15" y1="20" x2="15" y2="23"/>
+      <line x1="20" y1="9" x2="23" y2="9"/>
+      <line x1="20" y1="14" x2="23" y2="14"/>
+      <line x1="1" y1="9" x2="4" y2="9"/>
+      <line x1="1" y1="14" x2="4" y2="14"/>
+    </symbol>
+
+    <!-- Couverts -->
+    <symbol id="ic-utensils" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 2v7c0 1.1.9 2 2 2s2-.9 2-2V2"/>
+      <line x1="5" y1="11" x2="5" y2="22"/>
+      <path d="M21 2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3v7"/>
+      <line x1="3" y1="6" x2="7" y2="6"/>
+    </symbol>
+
+    <!-- Pilule / capsule -->
+    <symbol id="ic-pill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="9" width="18" height="6" rx="3"/>
+      <line x1="12" y1="9" x2="12" y2="15"/>
+    </symbol>
+
+    <!-- Triangle d'alerte -->
+    <symbol id="ic-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </symbol>
+
+    <!-- Globe / monde -->
+    <symbol id="ic-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </symbol>
+
+    <!-- Bulle de discussion -->
+    <symbol id="ic-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </symbol>
+
+    <!-- Coeur / santé -->
+    <symbol id="ic-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </symbol>
+
+  </defs>
+</svg>
+
   <!-- NAV -->
   <nav class="navbar">
     <div class="nav-brand">
-      <span class="leaf-icon">🌿</span>
+      <svg class="ic-nav" aria-label="WhatAPlant"><use href="#ic-leaf"/></svg>
       <span>WhatAPlant</span>
     </div>
     <div class="nav-tabs">
@@ -32,19 +141,27 @@
 
     <div class="upload-zone" id="uploadZone">
       <div class="upload-inner" id="uploadInner">
-        <span class="upload-icon">📷</span>
+        <svg class="ic-lg" aria-hidden="true"><use href="#ic-camera"/></svg>
         <p>Glissez une image ici ou cliquez pour choisir</p>
         <div class="upload-btns">
-          <button class="btn btn-primary" id="btnCamera">📸 Caméra</button>
-          <button class="btn btn-secondary" id="btnGallery">🖼️ Galerie</button>
+          <button class="btn btn-primary" id="btnCamera">
+            <svg class="ic"><use href="#ic-camera"/></svg> Caméra
+          </button>
+          <button class="btn btn-secondary" id="btnGallery">
+            <svg class="ic"><use href="#ic-image"/></svg> Galerie
+          </button>
         </div>
         <input type="file" id="fileInput" accept="image/*" hidden/>
       </div>
       <div class="preview-container hidden" id="previewContainer">
         <img id="previewImg" alt="Aperçu de la plante"/>
         <div class="preview-actions">
-          <button class="btn btn-primary" id="btnAnalyze">🔍 Analyser</button>
-          <button class="btn btn-ghost" id="btnReset">✕ Changer</button>
+          <button class="btn btn-primary" id="btnAnalyze">
+            <svg class="ic"><use href="#ic-search"/></svg> Analyser
+          </button>
+          <button class="btn btn-ghost" id="btnReset">
+            <svg class="ic"><use href="#ic-x"/></svg> Changer
+          </button>
         </div>
       </div>
     </div>
@@ -55,9 +172,9 @@
         <div class="spinner"></div>
         <p id="loadingText">Analyse en cours...</p>
         <div class="loading-steps">
-          <span class="step" id="step1">🔬 Traitement OpenCV</span>
-          <span class="step" id="step2">🌱 Identification PlantNet</span>
-          <span class="step" id="step3">🤖 Analyse IA Groq</span>
+          <span class="step" id="step1"><svg class="ic"><use href="#ic-flask"/></svg> Traitement OpenCV</span>
+          <span class="step" id="step2"><svg class="ic"><use href="#ic-sprout"/></svg> Identification PlantNet</span>
+          <span class="step" id="step3"><svg class="ic"><use href="#ic-cpu"/></svg> Analyse IA Groq</span>
         </div>
       </div>
     </div>
@@ -82,31 +199,31 @@
 
       <div class="result-sections">
         <div class="result-section">
-          <h3>🌿 Santé</h3>
+          <h3><svg class="ic"><use href="#ic-heart"/></svg> Santé</h3>
           <p id="healthStatus"></p>
         </div>
         <div class="result-section">
-          <h3>🍽️ Comestibilité</h3>
+          <h3><svg class="ic"><use href="#ic-utensils"/></svg> Comestibilité</h3>
           <p id="edibleDetails"></p>
           <div id="recipeImages" class="recipe-images"></div>
         </div>
         <div class="result-section">
-          <h3>💊 Propriétés médicinales</h3>
+          <h3><svg class="ic"><use href="#ic-pill"/></svg> Propriétés médicinales</h3>
           <p id="medicinalDetails"></p>
         </div>
         <div class="result-section">
-          <h3>⚠️ Toxicité</h3>
+          <h3><svg class="ic"><use href="#ic-alert"/></svg> Toxicité</h3>
           <p id="toxicDetails"></p>
         </div>
         <div class="result-section">
-          <h3>🌍 Impact environnemental</h3>
+          <h3><svg class="ic"><use href="#ic-globe"/></svg> Impact environnemental</h3>
           <p id="envImpact"></p>
         </div>
       </div>
 
       <!-- CHAT IA -->
       <div class="chat-section">
-        <h3>💬 Poser une question à l'agent IA</h3>
+        <h3><svg class="ic"><use href="#ic-chat"/></svg> Poser une question à l'agent IA</h3>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-row">
           <input type="text" id="chatInput" placeholder="Ex: Comment préparer une décoction ?"/>
