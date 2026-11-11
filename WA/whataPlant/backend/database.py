@@ -1,76 +1,131 @@
-import psycopg2
-import psycopg2.extras
 import os
+import json
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+USE_POSTGRES = bool(DATABASE_URL)
+
+if USE_POSTGRES:
+    import psycopg2
+    import psycopg2.extras
+else:
+    import sqlite3
+
+SQLITE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scans.db")
+
 
 def get_db():
-    conn = psycopg2.connect(DATABASE_URL)
-    return conn
+    if USE_POSTGRES:
+        return psycopg2.connect(DATABASE_URL)
+    else:
+        conn = sqlite3.connect(SQLITE_PATH)
+        conn.row_factory = sqlite3.Row
+        return conn
+
 
 def init_db():
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS scans (
-            id              SERIAL PRIMARY KEY,
-            created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            image_path      TEXT,
-            common_name     TEXT,
-            scientific_name TEXT,
-            family          TEXT,
-            confidence      REAL,
-            is_edible       TEXT,
-            is_medicinal    TEXT,
-            is_toxic        TEXT,
-            is_invasive     TEXT,
-            health_status   TEXT,
-            ai_report       TEXT,
-            plantnet_raw    TEXT,
-            latitude        REAL,
-            longitude       REAL
-        )
-    """)
+    if USE_POSTGRES:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS scans (
+                id              SERIAL PRIMARY KEY,
+                created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                image_path      TEXT,
+                common_name     TEXT,
+                scientific_name TEXT,
+                family          TEXT,
+                confidence      REAL,
+                is_edible       TEXT,
+                is_medicinal    TEXT,
+                is_toxic        TEXT,
+                is_invasive     TEXT,
+                health_status   TEXT,
+                ai_report       TEXT,
+                plantnet_raw    TEXT,
+                latitude        REAL,
+                longitude       REAL
+            )
+        """)
+        print("Base PostgreSQL prete")
+    else:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS scans (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                image_path      TEXT,
+                common_name     TEXT,
+                scientific_name TEXT,
+                family          TEXT,
+                confidence      REAL,
+                is_edible       TEXT,
+                is_medicinal    TEXT,
+                is_toxic        TEXT,
+                is_invasive     TEXT,
+                health_status   TEXT,
+                ai_report       TEXT,
+                plantnet_raw    TEXT,
+                latitude        REAL,
+                longitude       REAL
+            )
+        """)
+        print("Base SQLite prete")
     conn.commit()
     cur.close()
     conn.close()
-    print("Base PostgreSQL prete")
+
 
 def save_scan(data: dict) -> int:
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO scans (image_path, common_name, scientific_name, family, confidence,
-            is_edible, is_medicinal, is_toxic, is_invasive, health_status,
-            ai_report, plantnet_raw, latitude, longitude)
-        VALUES (%(image_path)s, %(common_name)s, %(scientific_name)s, %(family)s, %(confidence)s,
-            %(is_edible)s, %(is_medicinal)s, %(is_toxic)s, %(is_invasive)s, %(health_status)s,
-            %(ai_report)s, %(plantnet_raw)s, %(latitude)s, %(longitude)s)
-        RETURNING id
-    """, data)
-    scan_id = cur.fetchone()[0]
+    if USE_POSTGRES:
+        cur.execute("""
+            INSERT INTO scans (image_path, common_name, scientific_name, family, confidence,
+                is_edible, is_medicinal, is_toxic, is_invasive, health_status,
+                ai_report, plantnet_raw, latitude, longitude)
+            VALUES (%(image_path)s, %(common_name)s, %(scientific_name)s, %(family)s, %(confidence)s,
+                %(is_edible)s, %(is_medicinal)s, %(is_toxic)s, %(is_invasive)s, %(health_status)s,
+                %(ai_report)s, %(plantnet_raw)s, %(latitude)s, %(longitude)s)
+            RETURNING id
+        """, data)
+        scan_id = cur.fetchone()[0]
+    else:
+        cur.execute("""
+            INSERT INTO scans (image_path, common_name, scientific_name, family, confidence,
+                is_edible, is_medicinal, is_toxic, is_invasive, health_status,
+                ai_report, plantnet_raw, latitude, longitude)
+            VALUES (:image_path, :common_name, :scientific_name, :family, :confidence,
+                :is_edible, :is_medicinal, :is_toxic, :is_invasive, :health_status,
+                :ai_report, :plantnet_raw, :latitude, :longitude)
+        """, data)
+        scan_id = cur.lastrowid
     conn.commit()
     cur.close()
     conn.close()
     return scan_id
 
+
 def get_all_scans():
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur = conn.cursor()
     cur.execute("SELECT * FROM scans ORDER BY created_at DESC")
     rows = cur.fetchall()
     cur.close()
     conn.close()
     return [dict(r) for r in rows]
 
+
 def get_scan_by_id(scan_id: int):
     conn = get_db()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute("SELECT * FROM scans WHERE id = %s", (scan_id,))
+    cur = conn.cursor()
+    if USE_POSTGRES:
+        cur.execute("SELECT * FROM scans WHERE id = %s", (scan_id,))
+    else:
+        cur.execute("SELECT * FROM scans WHERE id = ?", (scan_id,))
     row = cur.fetchone()
     cur.close()
     conn.close()
     return dict(row) if row else None
+
 
 def get_dashboard_stats():
     conn = get_db()
