@@ -1,20 +1,20 @@
-import sqlite3
-import json
+import psycopg2
+import psycopg2.extras
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "whataPlant.db")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(DATABASE_URL)
     return conn
 
 def init_db():
     conn = get_db()
-    conn.execute("""
+    cur = conn.cursor()
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS scans (
-            id              INTEGER PRIMARY KEY AUTOINCREMENT,
-            created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+            id              SERIAL PRIMARY KEY,
+            created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             image_path      TEXT,
             common_name     TEXT,
             scientific_name TEXT,
@@ -32,55 +32,74 @@ def init_db():
         )
     """)
     conn.commit()
+    cur.close()
     conn.close()
-    print("✅ Base SQLite prête")
+    print("Base PostgreSQL prete")
 
 def save_scan(data: dict) -> int:
     conn = get_db()
-    cursor = conn.execute("""
+    cur = conn.cursor()
+    cur.execute("""
         INSERT INTO scans (image_path, common_name, scientific_name, family, confidence,
             is_edible, is_medicinal, is_toxic, is_invasive, health_status,
             ai_report, plantnet_raw, latitude, longitude)
-        VALUES (:image_path, :common_name, :scientific_name, :family, :confidence,
-            :is_edible, :is_medicinal, :is_toxic, :is_invasive, :health_status,
-            :ai_report, :plantnet_raw, :latitude, :longitude)
+        VALUES (%(image_path)s, %(common_name)s, %(scientific_name)s, %(family)s, %(confidence)s,
+            %(is_edible)s, %(is_medicinal)s, %(is_toxic)s, %(is_invasive)s, %(health_status)s,
+            %(ai_report)s, %(plantnet_raw)s, %(latitude)s, %(longitude)s)
+        RETURNING id
     """, data)
+    scan_id = cur.fetchone()[0]
     conn.commit()
-    scan_id = cursor.lastrowid
+    cur.close()
     conn.close()
     return scan_id
 
 def get_all_scans():
     conn = get_db()
-    rows = conn.execute("SELECT * FROM scans ORDER BY created_at DESC").fetchall()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT * FROM scans ORDER BY created_at DESC")
+    rows = cur.fetchall()
+    cur.close()
     conn.close()
     return [dict(r) for r in rows]
 
 def get_scan_by_id(scan_id: int):
     conn = get_db()
-    row = conn.execute("SELECT * FROM scans WHERE id = ?", (scan_id,)).fetchone()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT * FROM scans WHERE id = %s", (scan_id,))
+    row = cur.fetchone()
+    cur.close()
     conn.close()
     return dict(row) if row else None
 
 def get_dashboard_stats():
     conn = get_db()
-    total = conn.execute("SELECT COUNT(*) FROM scans").fetchone()[0]
-    top_plants = conn.execute("""
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM scans")
+    total = cur.fetchone()[0]
+    cur.execute("""
         SELECT scientific_name, COUNT(*) as count FROM scans
         GROUP BY scientific_name ORDER BY count DESC LIMIT 5
-    """).fetchall()
-    edible   = conn.execute("SELECT COUNT(*) FROM scans WHERE is_edible='Oui'").fetchone()[0]
-    medicinal= conn.execute("SELECT COUNT(*) FROM scans WHERE is_medicinal='Oui'").fetchone()[0]
-    toxic    = conn.execute("SELECT COUNT(*) FROM scans WHERE is_toxic='Oui'").fetchone()[0]
-    invasive = conn.execute("SELECT COUNT(*) FROM scans WHERE is_invasive='Oui'").fetchone()[0]
-    recent   = conn.execute("""
-        SELECT date(created_at) as day, COUNT(*) as count FROM scans
+    """)
+    top_plants = [{"scientific_name": r[0], "count": r[1]} for r in cur.fetchall()]
+    cur.execute("SELECT COUNT(*) FROM scans WHERE is_edible='Oui'")
+    edible = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM scans WHERE is_medicinal='Oui'")
+    medicinal = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM scans WHERE is_toxic='Oui'")
+    toxic = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM scans WHERE is_invasive='Oui'")
+    invasive = cur.fetchone()[0]
+    cur.execute("""
+        SELECT DATE(created_at) as day, COUNT(*) as count FROM scans
         GROUP BY day ORDER BY day DESC LIMIT 7
-    """).fetchall()
+    """)
+    recent = [{"day": str(r[0]), "count": r[1]} for r in cur.fetchall()]
+    cur.close()
     conn.close()
     return {
         "total": total,
-        "top_plants": [dict(r) for r in top_plants],
+        "top_plants": top_plants,
         "by_category": {"edible": edible, "medicinal": medicinal, "toxic": toxic, "invasive": invasive},
-        "recent": [dict(r) for r in recent]
+        "recent": recent
     }
