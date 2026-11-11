@@ -9,7 +9,11 @@ if not GROQ_API_KEY:
 
 GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
 
-client = Groq(api_key=GROQ_API_KEY)
+try:
+    client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+except Exception as e:
+    print(f"WARNING: Groq client init failed: {e}")
+    client = None
 
 SYSTEM_PROMPT = """Tu es WhatAPlant, un agent IA expert en botanique, agronomie et medecine traditionnelle africaine.
 Tu analyses les plantes et fournis des rapports complets en francais.
