@@ -16,7 +16,7 @@ async function loadHistory() {
 function renderHistory(scans) {
   const grid = document.getElementById("historyGrid");
   if (!scans.length) {
-    grid.innerHTML = '<div class="empty-state">Aucun scan pour le moment</div>';
+    grid.innerHTML = '<div class="empty-state"><svg class="il-empty" aria-hidden="true"><use href="#ic-sprout"/></svg>Aucun scan pour le moment</div>';
     return;
   }
   grid.innerHTML = scans.map(s => {
@@ -29,8 +29,8 @@ function renderHistory(scans) {
         <h4>${s.common_name || "Plante inconnue"}</h4>
         <p class="sci">${s.scientific_name || ""}</p>
         <div class="history-card-badges">
-          <span class="mini-badge badge ${badgeClass(s.is_edible)}"><svg class="ic"><use href="#ic-utensils"/></svg> ${s.is_edible || "?"}</span>
-          <span class="mini-badge badge ${badgeClass(s.is_toxic)}"><svg class="ic"><use href="#ic-alert"/></svg> ${s.is_toxic || "?"}</span>
+          <span class="mini-badge badge ${badgeClass(s.is_edible)}"><svg class="ic"><use href="#ic-bowl"/></svg> ${s.is_edible || "?"}</span>
+          <span class="mini-badge badge ${badgeClass(s.is_toxic)}"><svg class="ic"><use href="#ic-mushroom"/></svg> ${s.is_toxic || "?"}</span>
         </div>
         <p class="date">${formatDate(s.created_at)}</p>
       </div>
@@ -67,15 +67,15 @@ async function openScanModal(id) {
         <p style="color:var(--text-muted);font-style:italic;margin-bottom:0.5rem">${scan.scientific_name || ""}</p>
         <p style="color:var(--accent);font-size:0.85rem;margin-bottom:1rem">Famille : ${scan.family || "?"} | Confiance : ${scan.confidence || 0}%</p>
         <div class="badges-row" style="padding:0;margin-bottom:1rem">
-          <span class="badge ${badgeClass(scan.is_edible)}"><svg class="ic"><use href="#ic-utensils"/></svg> Comestible : ${scan.is_edible || "?"}</span>
-          <span class="badge ${badgeClass(scan.is_medicinal)}"><svg class="ic"><use href="#ic-pill"/></svg> Médicinal : ${scan.is_medicinal || "?"}</span>
-          <span class="badge ${badgeClass(scan.is_toxic)}"><svg class="ic"><use href="#ic-alert"/></svg> Toxique : ${scan.is_toxic || "?"}</span>
+          <span class="badge ${badgeClass(scan.is_edible)}"><svg class="ic"><use href="#ic-bowl"/></svg> Comestible : ${scan.is_edible || "?"}</span>
+          <span class="badge ${badgeClass(scan.is_medicinal)}"><svg class="ic"><use href="#ic-mortar"/></svg> Médicinal : ${scan.is_medicinal || "?"}</span>
+          <span class="badge ${badgeClass(scan.is_toxic)}"><svg class="ic"><use href="#ic-mushroom"/></svg> Toxique : ${scan.is_toxic || "?"}</span>
           <span class="badge ${badgeClass(scan.is_invasive)}"><svg class="ic"><use href="#ic-globe"/></svg> Invasif : ${scan.is_invasive || "?"}</span>
         </div>
         <div class="result-section" style="margin-bottom:0.75rem"><h3><svg class="ic"><use href="#ic-heart"/></svg> Santé</h3><p>${report.health_status || scan.health_status || "N/A"}</p></div>
-        <div class="result-section" style="margin-bottom:0.75rem"><h3><svg class="ic"><use href="#ic-utensils"/></svg> Comestibilité</h3><p>${report.edible_details || "N/A"}</p></div>
-        <div class="result-section" style="margin-bottom:0.75rem"><h3><svg class="ic"><use href="#ic-pill"/></svg> Médicinal</h3><p>${report.medicinal_details || "N/A"}</p></div>
-        <div class="result-section" style="margin-bottom:0.75rem"><h3><svg class="ic"><use href="#ic-alert"/></svg> Toxicité</h3><p>${report.toxic_details || "N/A"}</p></div>
+        <div class="result-section" style="margin-bottom:0.75rem"><h3><svg class="ic"><use href="#ic-bowl"/></svg> Comestibilité</h3><p>${report.edible_details || "N/A"}</p></div>
+        <div class="result-section" style="margin-bottom:0.75rem"><h3><svg class="ic"><use href="#ic-mortar"/></svg> Médicinal</h3><p>${report.medicinal_details || "N/A"}</p></div>
+        <div class="result-section" style="margin-bottom:0.75rem"><h3><svg class="ic"><use href="#ic-mushroom"/></svg> Toxicité</h3><p>${report.toxic_details || "N/A"}</p></div>
         <div class="result-section"><h3><svg class="ic"><use href="#ic-globe"/></svg> Environnement</h3><p>${report.environmental_impact || "N/A"}</p></div>
         <p style="color:var(--text-muted);font-size:0.8rem;margin-top:1rem">Scanné le ${formatDate(scan.created_at)}</p>
       </div>

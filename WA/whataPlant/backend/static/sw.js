@@ -1,4 +1,4 @@
-const CACHE = "whataPlant-v3";
+const CACHE = "whataPlant-v4";
 const ASSETS = ["/index.html", "/css/style.css", "/js/app.js", "/js/scanner.js", "/js/history.js", "/js/dashboard.js"];
 
 self.addEventListener("install", e => {

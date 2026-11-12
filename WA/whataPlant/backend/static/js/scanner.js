@@ -228,9 +228,9 @@ function renderResult(data) {
   document.getElementById("confidenceBar").style.width = conf + "%";
   document.getElementById("confidenceVal").textContent = conf + "%";
 
-  const IC_u = '<svg class="ic"><use href="#ic-utensils"/></svg>';
-  const IC_p = '<svg class="ic"><use href="#ic-pill"/></svg>';
-  const IC_a = '<svg class="ic"><use href="#ic-alert"/></svg>';
+  const IC_u = '<svg class="ic"><use href="#ic-bowl"/></svg>';
+  const IC_p = '<svg class="ic"><use href="#ic-mortar"/></svg>';
+  const IC_a = '<svg class="ic"><use href="#ic-mushroom"/></svg>';
   const IC_g = '<svg class="ic"><use href="#ic-globe"/></svg>';
   const badges = [
     { label: IC_u + " Comestible : " + (analysis.is_edible || "?"), val: analysis.is_edible },
@@ -261,12 +261,12 @@ function renderResult(data) {
   }
 
   if (recipes.length > 0 && analysis.is_edible !== "Non") {
-    recipeImages.innerHTML = `<p style="font-size:0.8rem;color:var(--accent);margin-bottom:0.5rem;width:100%"><svg class="ic"><use href="#ic-utensils"/></svg> Idées de recettes</p>` +
+    recipeImages.innerHTML = `<p style="font-size:0.8rem;color:var(--accent);margin-bottom:0.5rem;width:100%"><svg class="ic"><use href="#ic-bowl"/></svg> Idées de recettes</p>` +
       recipes.slice(0, 3).map(r => `
         <div class="recipe-card">
           ${r.image_url
             ? `<img src="${r.image_url}" alt="${r.name}" loading="lazy" onerror="this.style.display='none'"/>`
-            : `<div style="width:100%;height:110px;background:var(--bg2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--green-light)"><svg style="width:2.5rem;height:2.5rem"><use href="#ic-utensils"/></svg></div>`
+            : `<div style="width:100%;height:110px;background:var(--bg2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--green-light)"><svg style="width:2.5rem;height:2.5rem"><use href="#ic-bowl"/></svg></div>`
           }
           <p>${r.name}</p>
         </div>`).join("");
