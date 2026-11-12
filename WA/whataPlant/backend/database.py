@@ -27,6 +27,15 @@ def get_db():
     return conn
 
 
+def _dict_cursor(conn):
+    """Curseur dont les lignes se convertissent en dictionnaire (colonne -> valeur).
+    SQLite le permet via row_factory ; PostgreSQL a besoin de RealDictCursor,
+    sinon les lignes sont des tuples et dict(ligne) échoue."""
+    if USE_POSTGRES:
+        return conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    return conn.cursor()
+
+
 def init_db():
     conn = get_db()
     cur = conn.cursor()
@@ -111,7 +120,7 @@ def save_scan(data: dict) -> int:
 
 def get_all_scans():
     conn = get_db()
-    cur = conn.cursor()
+    cur = _dict_cursor(conn)
     cur.execute("SELECT * FROM scans ORDER BY created_at DESC")
     rows = cur.fetchall()
     cur.close()
@@ -121,7 +130,7 @@ def get_all_scans():
 
 def get_scan_by_id(scan_id: int):
     conn = get_db()
-    cur = conn.cursor()
+    cur = _dict_cursor(conn)
     if USE_POSTGRES:
         cur.execute("SELECT * FROM scans WHERE id = %s", (scan_id,))
     else:
