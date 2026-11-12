@@ -11,7 +11,7 @@ if DATABASE_URL:
     try:
         import psycopg2
         import psycopg2.extras
-        _test = psycopg2.connect(DATABASE_URL)
+        _test = psycopg2.connect(DATABASE_URL, connect_timeout=3)
         _test.close()
         USE_POSTGRES = True
         print("✅ PostgreSQL connecté")
