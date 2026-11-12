@@ -1,25 +1,30 @@
 import os
 import json
+import sqlite3
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-USE_POSTGRES = bool(DATABASE_URL)
-
-if USE_POSTGRES:
-    import psycopg2
-    import psycopg2.extras
-else:
-    import sqlite3
-
 SQLITE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scans.db")
+
+# Test PostgreSQL connectivity at startup; fall back to SQLite if unavailable
+USE_POSTGRES = False
+if DATABASE_URL:
+    try:
+        import psycopg2
+        import psycopg2.extras
+        _test = psycopg2.connect(DATABASE_URL)
+        _test.close()
+        USE_POSTGRES = True
+        print("✅ PostgreSQL connecté")
+    except Exception as _e:
+        print(f"⚠️  PostgreSQL indisponible ({_e}) — bascule sur SQLite")
 
 
 def get_db():
     if USE_POSTGRES:
         return psycopg2.connect(DATABASE_URL)
-    else:
-        conn = sqlite3.connect(SQLITE_PATH)
-        conn.row_factory = sqlite3.Row
-        return conn
+    conn = sqlite3.connect(SQLITE_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def init_db():
