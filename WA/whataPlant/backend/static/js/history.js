@@ -24,7 +24,7 @@ function renderHistory(scans) {
     const imgSrc = s.image_path ? `${API_BASE}/image/${s.image_path}` : PLACEHOLDER_IMG;
     return `
     <div class="history-card" onclick="openScanModal(${s.id})">
-      <img src="${imgSrc}" alt="${s.common_name}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'"/>
+      <img src="${imgSrc}" alt="${s.common_name}" loading="lazy" onerror="this.onerror=null;this.src=PLACEHOLDER_IMG"/>
       <div class="history-card-body">
         <h4>${s.common_name || "Plante inconnue"}</h4>
         <p class="sci">${s.scientific_name || ""}</p>
@@ -63,7 +63,7 @@ async function openScanModal(id) {
         <button onclick="this.closest('.modal-overlay').remove()">&#x2715;</button>
       </div>
       <div style="padding:1.5rem">
-        ${imgSrc ? `<img src="${imgSrc}" style="width:100%;max-height:250px;object-fit:cover;border-radius:12px;margin-bottom:1rem" alt=""/>` : ""}
+        ${imgSrc ? `<img src="${imgSrc}" style="width:100%;max-height:250px;object-fit:cover;border-radius:12px;margin-bottom:1rem" alt="" onerror="this.remove()"/>` : ""}
         <p style="color:var(--text-muted);font-style:italic;margin-bottom:0.5rem">${scan.scientific_name || ""}</p>
         <p style="color:var(--accent);font-size:0.85rem;margin-bottom:1rem">Famille : ${scan.family || "?"} | Confiance : ${scan.confidence || 0}%</p>
         <div class="badges-row" style="padding:0;margin-bottom:1rem">
